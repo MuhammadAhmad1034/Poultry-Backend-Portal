@@ -1,0 +1,115 @@
+﻿@{
+    Layout = null;
+}
+@using PoultryPro_Portal.Models.Call_Center_Agent;
+@model AgentModel
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Call Center Agent Signup - PoultryPro_Portal</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        /* Center the form */
+        body {
+            background: linear-gradient(135deg, #B9E5B0, #89C2A6);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .form-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: calc(100vh - 56px); /* Adjust height for navbar */
+            backdrop-filter: blur(5px); /* Optional: Adds a blur effect */
+        }
+
+        .form-box {
+            width: 100%;
+            max-width: 300px; /* Reduced width */
+            padding: 1.5rem; /* Reduced padding */
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.9); /* Slight transparency */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+            .form-box h2 {
+                text-align: center;
+                margin-bottom: 1.5rem;
+                color: #4CAF50; /* Change to your brand color */
+            }
+
+            .form-box input {
+                height: 38px; /* Smaller height for input fields */
+            }
+
+            .form-box button {
+                width: 100%;
+                margin-top: 1rem;
+                background-color: #4CAF50; /* Change to your brand color */
+                border: none;
+            }
+
+                .form-box button:hover {
+                    background-color: #45a049; /* Darker shade for hover */
+                }
+
+        .password-requirements {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+            text-align:center;
+            color: #2D5D7B;
+        }
+
+       
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-light bg-light">
+        <div class="container-fluid">
+            <span class="navbar-brand mx-auto">PoultryPro Portal</span>
+            <a asp-action="Login" class="btn btn-outline-success" role="button">Login as Agent</a>
+            <a asp-action="Login" asp-controller="Admin" class=" ms-3 btn btn-outline-success" role="button">Admin</a>
+
+        </div>
+
+    </nav>
+
+    <div class="form-container">
+        <div class="form-box">
+            <h2>Agent Signup</h2>
+            <form asp-action="Signup" method="post">
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <p>@error.ErrorMessage</p>
+                        }
+                    </div>
+                }
+                <div class="mb-3">
+                    <label asp-for="callAgentEmail" class="form-label">Email</label>
+                    <input asp-for="callAgentEmail" class="form-control" type="email" required />
+                </div>
+                <div class="mb-3">
+                    <label asp-for="password" class="form-label">Password</label>
+                    <input asp-for="password" class="form-control" type="password" required />
+                    <div class="password-requirements">
+                        Password must contain at least 8 characters, including one uppercase letter, one lowercase letter, one digit, and one special character.
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Signup</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

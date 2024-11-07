@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35222.181
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoultryPro Portal", "PoultryPro Portal\PoultryPro Portal.csproj", "{8FA45EEE-8CD2-4488-95C4-0924A23188DE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8FA45EEE-8CD2-4488-95C4-0924A23188DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FA45EEE-8CD2-4488-95C4-0924A23188DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FA45EEE-8CD2-4488-95C4-0924A23188DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FA45EEE-8CD2-4488-95C4-0924A23188DE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DB63F44E-F9BE-462D-BDED-0E924151BB90}
+	EndGlobalSection
+EndGlobal
