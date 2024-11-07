@@ -1,3 +1,4 @@
+
 /* Sidebar styles */
 .sidebar {
     height: 100vh;
@@ -20,6 +21,17 @@
 .main-content {
     padding: 20px;
 }
+
+
+/* Sidebar styles */
+.sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh; /* Full viewport height */
+    padding-top: 20px;
+    border-right: 1px solid #ddd;
+}
+
 
 /* User profile */
 .user-profile {
@@ -201,4 +213,9 @@
     to {
         transform: translateY(-15px);
     }
+}
+.btn.active {
+    background-color: #0056b3; /* Adjust color */
+    color: white;
+    border-color: #0056b3;
 }
