@@ -17,5 +17,9 @@ namespace PoultryPro_Portal.Models
         public string OrderType { get; set; }
         [FirestoreProperty]
         public string Address { get; set; }
+        [FirestoreProperty]
+        public string city {  get; set; }
+        [FirestoreProperty]
+        public string province { get; set; }
     }
 }

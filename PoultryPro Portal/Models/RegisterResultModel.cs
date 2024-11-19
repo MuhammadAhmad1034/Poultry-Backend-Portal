@@ -1,5 +1,8 @@
-﻿namespace PoultryPro_Portal.Models
+﻿using Google.Cloud.Firestore;
+
+namespace PoultryPro_Portal.Models
 {
+    
     public class RegisterResultModel
     {
         public bool Success { get; set; }

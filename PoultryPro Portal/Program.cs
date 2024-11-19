@@ -18,7 +18,7 @@ builder.Services.AddSingleton<FirestoreDb>(sp =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<IAdminService, AdminService>();
 builder.Services.AddScoped<ICallCenterAgentService, CallCenterAgentService>();
-
+builder.Services.AddScoped<CustomerService>();
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
