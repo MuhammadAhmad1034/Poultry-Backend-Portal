@@ -18,11 +18,11 @@
         <div class="row">
             <!-- Sidebar -->
             <div class="col-md-2 sidebar">
-                <h4 class="text-center mb-4">Poultry System</h4>
+                <h4 class="text-center mb-4">Henly Portal</h4>
                 <nav class="nav flex-column">
                     <a class="nav-link active" href="#"><i class="fas fa-home"></i> Dashboard</a>
                     <a class="nav-link" href="#"><i class="fas fa-box"></i> Inventory</a>
-                    <a class="nav-link" href="#"><i class="fas fa-users"></i> Customers</a>
+                    <a class="nav-link" asp-action="Index" asp-controller="Customer"><i class="fas fa-users"></i> Customers</a>
                 </nav>
             </div>
            
@@ -47,9 +47,10 @@
                     </div>
                     <div class="col-md-4 text-end">
                         <select class="form-select" id="filterStatus">
-                            <option value="all">All Status</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Processing">Processing</option>
+                            <option value="all">Get Orders by Status</option>
+                            <option value="Unassigned">Unassigned</option>
+                            <option value="In Pending">In Pending</option>
+                            <option value="In Progress">In Progress</option>
                             <option value="Completed">Completed</option>
                         </select>
                     </div>
@@ -62,6 +63,7 @@
                 </div>
                 <!-- Main Action Buttons for Order Types -->
                 <div class="text-center mb-4">
+                    <button class="btn btn-secondary mx-2" id="allOrdersBtn">All Orders</button>
                     <button class="btn btn-secondary mx-2" id="broilerOrdersBtn">Broiler Orders</button>
                     <button class="btn btn-secondary mx-2" id="eggOrdersBtn">Egg Orders</button>
                     <button class="btn btn-secondary mx-2" id="hatcheryOrdersBtn">Hatchery Orders</button>
@@ -91,6 +93,7 @@
                         <div class="loading-dots">
                             <div></div><div></div><div></div>
                         </div>
+                        
                     </div>
                 </div>
                 <nav aria-label="Order table pagination">
@@ -105,27 +108,58 @@
     </div>
     <!-- Order Status Update Modal -->
     <div id="orderDetailModal" class="modal fade" tabindex="-1">
-        <div class="modal-dialog modal-sm">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Update Order Status</h5>
+                    <h5 class="modal-title">Order Details</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Order Information</h6>
+                                <p><strong>Order No:</strong> <span id="modalOrderNo">N/A</span></p>
+                                <p><strong>Status:</strong> <span id="modalOrderStatus">N/A</span></p>
+                                <p><strong>Quantity:</strong> <span id="modalQuantity">N/A</span></p>
+                                <p><strong>Current Rate:</strong> <span id="modalCurrentRate">N/A</span></p>
+                                <p><strong>Total Price:</strong> <span id="modalTotalPrice">N/A</span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Customer Information</h6>
+                                <p><strong>Name:</strong> <span id="modalBookerName">N/A</span></p>
+                                <p><strong>Phone:</strong> <span id="modalPhone">N/A</span></p>
+                                <p><strong>Address:</strong> <span id="modalAddress">N/A</span></p>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-md-4">
+                                <button class="btn btn-primary" id="callOrderBookerBtn">Call Order Booker</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-primary" id="viewSuppliersBtn">View Possible Suppliers</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-primary" id="viewBookerProfileBtn">View Booker's Profile</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @* <div class="modal-footer">
+                    <!-- Update Status Dropdown -->
                     <select class="form-select" id="statusChange">
                         <option value="Pending">Pending</option>
                         <option value="Processing">Processing</option>
                         <option value="Completed">Completed</option>
                     </select>
-                </div>
-                <div class="modal-footer">
                     <button type="button" class="btn btn-primary" id="updateStatusBtn">Update Status</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                </div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div> *@
             </div>
         </div>
     </div>
-    <!-- Order Details Modal -->
+
+  @*   <!-- Order Details Modal -->
     <div id="viewOrderModal" class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -158,8 +192,8 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div id="confirmationModal" class="modal fade" tabindex="-1">
+    </div> *@
+    @* <div id="confirmationModal" class="modal fade" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -175,7 +209,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> *@
     <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
         <div id="liveToast" class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
@@ -183,6 +217,26 @@
                     <!-- Toast message content -->
                 </div>
                 <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Suppliers Modal -->
+    <div id="suppliersModal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Top Suppliers</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="suppliersList" class="list-group">
+                        <!-- Supplier items will be dynamically added here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>

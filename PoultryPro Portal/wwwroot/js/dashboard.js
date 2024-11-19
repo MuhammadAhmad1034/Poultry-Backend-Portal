@@ -1,4 +1,5 @@
 $(document).ready(function () {
+    
     // Polling function to refresh orders periodically
     setInterval(() => {
         fetchOrders();
@@ -49,10 +50,11 @@ $(document).ready(function () {
                     <td>${order.phone || 'N/A'}</td>
                     <td>${order.status || 'N/A'}</td>
                     <td>${order.orderType || 'N/A'}</td>
-                    <td>${order.address || 'N/A'}</td>
+                    <td>${order.address + " "+order.city + ", " + order.province || 'N/A'
+            }</td >
                     <td>
-                        <button class="btn btn-info" onclick="viewOrder('${order.orderNo}')">Details</button>
-                        <button class="btn btn-primary" onclick="openStatusModal('${order.orderNo}', '${order.status}')">Update Status</button>
+                       <button class="btn btn-primary" onclick="viewOrder('${order.orderNo}')">View Details</button>
+                        
                     </td>
                 </tr>`;
             });
@@ -68,13 +70,18 @@ $(document).ready(function () {
             $('#paginationControls').html(paginationContent);
         }).fail(function () {
             showError("Error fetching orders from the server.");
+        }).always(function () {
+            hideSpinner(); // Ensure spinner is hidden on both success and error
         });
     }
 
     // Change page function
     window.changePage = function (page) {
         currentPage = page;
-        fetchOrders(page);
+        const searchType = $('#searchType').val(); // Get current search type
+        const searchTerm = $('#searchBar').val(); // Get current search term
+        const status = $('#filterStatus').val(); // Get current filter status
+        fetchFilteredOrders(searchType, searchTerm, status); // Fetch filtered data for the page
     }
 
     // Function to open status modal and set order data
@@ -104,10 +111,9 @@ $(document).ready(function () {
                 <td>${order.phone || 'N/A'}</td>
                 <td>${order.status || 'N/A'}</td>
                 <td>${order.orderType || 'N/A'}</td>
-                <td>${order.address || 'N/A'}</td>
+                <td>${order.city || 'N/A'}</td>
                 <td>
-                    <button class="btn btn-info" onclick="viewOrder('${order.orderNo}')">Details</button>
-                    <button class="btn btn-primary" onclick="openStatusModal('${order.orderNo}', '${order.status}')">Update Status</button>
+                    <button class="btn btn-primary" onclick="viewOrder('${order.orderNo}')">View Details</button>
                 </td>
             </tr>`;
             });
@@ -124,11 +130,12 @@ $(document).ready(function () {
     function setActiveButton(buttonId) {
         // Remove the 'active' class from all buttons
         $('#broilerOrdersBtn, #eggOrdersBtn, #hatcheryOrdersBtn').removeClass('active');
-
+        $('#allOrdersBtn').removeClass('active');
         // Add the 'active' class to the clicked button
         $(`#${buttonId}`).addClass('active');
     }
 
+    setActiveButton('allOrdersBtn');
     // Event listeners for main action buttons
     $('#broilerOrdersBtn').click(function () {
         setActiveButton('broilerOrdersBtn'); // Activate button
@@ -138,12 +145,17 @@ $(document).ready(function () {
     $('#eggOrdersBtn').click(function () {
         setActiveButton('eggOrdersBtn'); // Activate button
 
-        fetchOrdersByType('Egg/Golden'); // Fetch orders of type 'Egg'
+        fetchOrdersByType('Eggs/Golden'); // Fetch orders of type 'Egg'
     });
 
     $('#hatcheryOrdersBtn').click(function () {
-        setActiveButton('hatcheryOrdersBtn'); // Activate button
-        fetchOrdersByType('Hatchery'); // Fetch orders of type 'Hatchery'
+        setActiveButton('hatcheryOrdersBtn');
+        fetchOrdersByType('Hatchery'); 
+    });
+
+    $('#allOrdersBtn').click(function () {
+        setActiveButton('allOrdersBtn');
+        fetchOrders();
     });
 
 
@@ -167,28 +179,7 @@ $(document).ready(function () {
     //            });
     //    }
     //});
-    $('#updateStatusBtn').click(function () {
-        const orderNo = $('#orderDetailModal').data('orderNo');
-        const status = $('#statusChange').val();
-        $('#confirmationModal').modal('show'); // Show confirmation modal
-
-        // When user confirms update
-        $('#confirmUpdateStatusBtn').off('click').on('click', function () {
-            $('#confirmationModal').modal('hide');
-            showSpinner();
-
-            $.post('/Dashboard/UpdateOrderStatus', { orderNo, status })
-                .done(() => {
-                    showToast("Order status updated!", "success"); // Use toast for feedback
-                    fetchOrders(); // Refresh orders table
-                    $('#orderDetailModal').modal('hide');
-                })
-                .fail(function () {
-                    showToast("Failed to update status.", "error");
-                })
-                .always(() => hideSpinner());
-        });
-    });
+    
     // Search functionality
     $('#searchBtn').click(function () {
         const searchTerm = $('#searchBar').val();
@@ -217,7 +208,10 @@ $(document).ready(function () {
                 return;
             }
 
+            const totalPages = Math.ceil(orders.length / itemsPerPage);
             let tableContent = '';
+
+            
             orders.forEach(order => {
                 tableContent += `<tr>
                     <td>${order.orderNo}</td>
@@ -225,10 +219,10 @@ $(document).ready(function () {
                     <td>${order.phone}</td>
                     <td>${order.status}</td>
                     <td>${order.orderType}</td>
-                    <td>${order.address}</td>
+                    <td>${order.address+" " + order.city + ", " + order.province}</td>
                     <td>
-                        <button class="btn btn-info" onclick="viewOrder('${order.orderNo}')">Details</button>
-                        <button class="btn btn-primary" onclick="openStatusModal('${order.orderNo}', '${order.status}')">Update Status</button>
+                    
+                       <button class="btn btn-primary" onclick="viewOrder('${order.orderNo}')">View Details</button>
                     </td>
                 </tr>`;
             });
@@ -241,27 +235,75 @@ $(document).ready(function () {
     
     }
 
-    // View order details in modal
-    window.viewOrder = function (orderId) {
-        $.get(`/Dashboard/GetOrderById?orderNo=${orderId}`, function (order) {
-            if (order) {
-                $('#modalOrderNo').text(order.orderNo);
-                $('#modalOrderStatus').text(order.status);
-                $('#modalQuantity').text(order.quantity || 'N/A');
-                $('#modalCurrentRate').text(order.currentRate || 'N/A');
-                $('#modalTotalPrice').text(order.totalPrice || 'N/A');
-                $('#modalBookerName').text(order.bookerName);
-                $('#modalPhone').text(order.phone);
-                $('#modalAddress').text(order.address);
+   // Function to fetch and display order details in the modal
+window.viewOrder = function(orderId) {
+    $.get(`/Dashboard/GetOrderById?orderNo=${orderId}`, function (order) {
+        if (order) {
+            $('#modalOrderNo').text(order.orderNo);
+            $('#modalOrderStatus').text(order.status);
+            $('#modalQuantity').text(order.quantity || 'N/A');
+            $('#modalCurrentRate').text(order.currentRate || 'N/A');
+            $('#modalTotalPrice').text(order.totalPrice || 'N/A');
+            $('#modalBookerName').text(order.bookerName);
+            $('#modalPhone').text(order.phone);
+            $('#modalAddress').text(order.address + " " + order.city+", "+order.province);
 
-                $('#viewOrderModal').modal('show');
-            } else {
-                alert("Order details could not be found.");
-            }
-        }).fail(function () {
-            alert("Failed to fetch order details.");
-        });
-    };
+            // Set the current status in the dropdown
+            //$('#statusChange').val(order.status);
+
+            $('#orderDetailModal').modal('show');
+        } else {
+            alert("Order details could not be found.");
+        }
+    }).fail(function () {
+        alert("Failed to fetch order details.");
+    });
+}
+    //$('#updateStatusBtn').click(function () {
+    //    const orderNo = $('#modalOrderNo').text();
+    //    const status = $('#statusChange').val();
+    //    $('#confirmationModal').modal('show'); // Show confirmation modal
+
+    //    // When user confirms update
+    //    $('#confirmUpdateStatusBtn').off('click').on('click', function () {
+    //        $('#confirmationModal').modal('hide');
+    //        showSpinner();
+
+    //        $.post('/Dashboard/UpdateOrderStatus', { orderNo, status })
+    //            .done(() => {
+    //                showToast("Order status updated!", "success"); // Use toast for feedback
+    //                fetchOrders(); // Refresh orders table
+    //                $('#orderDetailModal').modal('hide');
+    //            })
+    //            .fail(function () {
+    //                showToast("Failed to update status.", "error");
+    //            })
+    //            .always(() => hideSpinner());
+    //    });
+    //});
+// Call Order Booker action
+$('#callOrderBookerBtn').click(function () {
+    const bookerName = $('#modalBookerName').text();
+    const phone = $('#modalPhone').text();
+    alert(`Calling ${bookerName} at ${phone}`);
+    // Implement additional call functionality if needed
+});
+
+// View Possible Suppliers action
+//$('#viewSuppliersBtn').click(function () {
+//    const orderType = $('#modalOrderStatus').text();
+//    const quantity = $('#modalQuantity').text();
+//    alert(`Viewing possible suppliers for ${orderType} with quantity ${quantity}`);
+//    // Implement supplier view functionality if needed
+//});
+
+// View Booker's Profile action
+$('#viewBookerProfileBtn').click(function () {
+    const bookerName = $('#modalBookerName').text();
+    alert(`Viewing profile for ${bookerName}`);
+    // Implement booker profile view functionality if needed
+});
+
 
     // Initial fetch of orders
     fetchOrders();
@@ -282,3 +324,56 @@ function showToast(message, type) {
     const toast = new bootstrap.Toast(toastEl);
     toast.show();
 }
+
+document.getElementById('viewSuppliersBtn').addEventListener('click', async () => {
+
+    const modalAddress = document.getElementById('modalAddress').innerText;
+    const parts = modalAddress.split(',');
+
+    const cityName = parts[0].replace(/^\d+\s+/, '').replace(/\d+/g, '').trim().split(' ').pop();
+    const province = parts[1].trim();
+
+    console.log(cityName);
+    console.log(province);
+    if (!cityName) {
+        alert("City not found in order details.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`/Dashboard/GetTopSuppliersByCity?city=${encodeURIComponent(cityName)}`);
+        if (!response.ok) throw new Error(`Failed to fetch suppliers: ${response.statusText}`);
+
+        const suppliers = await response.json();
+        showSuppliersModal(suppliers);
+    } catch (error) {
+        console.error(error);
+        alert("Failed to load suppliers. Please try again.");
+    }
+});
+
+function showSuppliersModal(suppliers) {
+    const suppliersList = document.getElementById('suppliersList');
+    suppliersList.innerHTML = '';
+
+    if (!suppliers || suppliers.length === 0) {
+        suppliersList.innerHTML = '<p class="text-center">No suppliers available for this city.</p>';
+        $('#suppliersModal').modal('show');
+        return;
+    }
+
+    suppliers.forEach(supplier => {
+        const supplierItem = document.createElement('div');
+        supplierItem.classList.add('list-group-item');
+        supplierItem.innerHTML = `
+            <h5 class="mb-1">${supplier.name}</h5>
+            <p class="mb-1"><strong>City:</strong> ${supplier.city}</p>
+            <p class="mb-1"><strong>Commission:</strong> ${supplier.commission}</p>
+            <small><strong>Contact:</strong> ${supplier.contact}</small>
+        `;
+        suppliersList.appendChild(supplierItem);
+    });
+
+    $('#suppliersModal').modal('show');
+}
+
